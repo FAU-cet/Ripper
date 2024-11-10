@@ -1,0 +1,49 @@
+services:
+  influx:
+    container_name: influx
+    image: influxdb
+    # ports: # internal ports, only open for debugging
+    #   - 9696:8086
+    environment:
+      # plain secrets here are ok, this db will never see the outside world
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: admin1000
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: admin1000
+      DOCKER_INFLUXDB_INIT_ORG: faucet
+      DOCKER_INFLUXDB_INIT_BUCKET: ripper
+    networks:
+      - influx
+
+  grafana:
+    # default credentials of admin:admin
+    container_name: grafana
+    image: grafana/grafana
+    restart: unless-stopped
+    ports:
+      - 6969:3000
+    volumes:
+      - ./grafana-provisioning:/etc/grafana/provisioning
+    depends_on:
+      - influx
+    networks:
+      - influx
+
+  scraper:
+    container_name: scraper
+    build: ./scraper
+    environment:
+      INFLUXDB_URL: http://influx:8086
+      INFLUXDB_TOKEN: admin1000
+      INFLUXDB_ORG: faucet
+      INFLUXDB_BUCKET: ripper
+    depends_on:
+      - influx
+    networks:
+      - influx
+
+networks:
+  influx:
+    driver: bridge
+
+# no other volumes, we don't care if old data gets lost

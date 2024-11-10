@@ -1,0 +1,20 @@
+{
+    "interval": 60,
+    "nodes": [
+        {
+            "host": "emmy11",
+            "gpus": 0,
+            "vendor": null
+        },
+        {
+            "host": "emmy8",
+            "gpus": 1,
+            "vendor": "nvidia"
+        },
+        {
+            "host": "emmy2",
+            "gpus": 1,
+            "vendor": "nvidia"
+        }
+    ]
+}
