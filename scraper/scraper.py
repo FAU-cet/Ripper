@@ -27,10 +27,25 @@ print('done')
 
 # connect to nodes and build data dictionary
 def scrape() -> dict:
-    pass
-    # TODO
-    from random import randint
-    return {"amog": randint(1, 10)}
+    data = {}
+    from random import randint, choice
+
+    for node in cfg['nodes']:
+        host = node['host']
+        gpus = node['gpus']
+
+        # CPU scrape
+        # TODO: sudo turbostat -q -S -n 1 -s Busy%,PkgWatt
+        data[f'{host}-cpu-usg'] = randint(0, 100)
+        data[f'{host}-cpu-pkg'] = randint(5, 65)
+
+        # GPU scrape
+        for gpu in range(gpus):
+            # TODO: nvidia-smi -q -i <gpu> -d UTILIZATION,POWER
+            data[f'{host}-gpu{gpu}-usg'] = randint(0, 100)
+            data[f'{host}-gpu{gpu}-pkg'] = randint(40, 200)
+
+    return data
 
 # upload data to influx
 def push(data: dict):

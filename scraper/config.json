@@ -2,18 +2,18 @@
     "interval": 60,
     "nodes": [
         {
-            "host": "emmy11",
+            "host": "drain",
             "gpus": 0,
             "vendor": null
         },
         {
-            "host": "emmy8",
-            "gpus": 1,
+            "host": "hot",
+            "gpus": 4,
             "vendor": "nvidia"
         },
         {
-            "host": "emmy2",
-            "gpus": 1,
+            "host": "cold",
+            "gpus": 4,
             "vendor": "nvidia"
         }
     ]
