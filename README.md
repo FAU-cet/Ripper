@@ -6,11 +6,12 @@ Collect Information such as Usage and Power Limits and visualize them on Grafana
 
 1. Create `scraper/.env` for ssh access to the nodes
     ```
-    USER=<username>
-    PASS=<password>
+    R_USER=<username>
+    R_PASS=<password>
     ```
 2. Adjust `scraper/config.json` based on your needs
-3. `./up.sh`
+3. Copy a private key to `scraper/id_ssh` (optional, only needed for prohibit-password systems)
+4. `./up.sh`
 
 ## Notes
 
@@ -25,5 +26,5 @@ Use `./rebuild.sh` if you want to start a Ripper environment from scratch.
 - [X] Setup scraper
 - [X] Interface Grafana <-> InfluxDB
 - [X] Interface python-scraper <-> InfluxDB
-- [ ] Scrape data from nodes
+- [X] Scrape data from nodes
 - [ ] Create default dashboard layout

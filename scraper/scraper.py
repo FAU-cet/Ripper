@@ -2,7 +2,18 @@
 
 # general imports
 from time import sleep
+from os import path
+import paramiko
+
+# env
 from os import getenv
+username = getenv('R_USER')
+password = getenv('R_PASSWORD')
+if password is None:
+    password = ''
+keyfile = None
+if path.exists('./id_ssh'):
+    keyfile = './id_ssh'
 
 # config
 print('[ripper] loading config...', end='')
@@ -34,16 +45,28 @@ def scrape() -> dict:
         host = node['host']
         gpus = node['gpus']
 
+        # connect
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(host, username=username, key_filename=keyfile, password=password)
+
         # CPU scrape
-        # TODO: sudo turbostat -q -S -n 1 -s Busy%,PkgWatt
-        data[f'{host}-cpu-usg'] = randint(0, 100)
-        data[f'{host}-cpu-pkg'] = randint(5, 65)
+        stdin, stdout, stderr = client.exec_command('sudo turbostat -q -S -n 1 -s Busy%,PkgWatt')
+        stdin.write(password + '\n')
+        intermediate = stdout.read().split('\n')[1].split(' ') # TODO: ' ' or '\t'?
+        data[f'{host}-cpu-usg'] = round(float(intermediate[0]))
+        data[f'{host}-cpu-pkg'] = round(float(intermediate[-1]))
 
         # GPU scrape
         for gpu in range(gpus):
-            # TODO: nvidia-smi -q -i <gpu> -d UTILIZATION,POWER
-            data[f'{host}-gpu{gpu}-usg'] = randint(0, 100)
-            data[f'{host}-gpu{gpu}-pkg'] = randint(40, 200)
+            if node['vendor'] == 'nvidia':
+                stdin, stdout, stderr = client.exec_command(f'nvidia-smi -q -i {gpu} -d UTILIZATION,POWER')
+                usg = int([l for l in stdout.split('\n') if 'Gpu' in l][0].split(' ')[-2])
+                pwr = round(float([l for l in stdout.split('\n') if 'Gpu' in l][0].split(' ')[-2]))
+                data[f'{host}-gpu{gpu}-usg'] = usg
+                data[f'{host}-gpu{gpu}-pwr'] = pwr
+            else:
+                print(f'GPU vendor {node['vendor']} not implemented')
 
     return data
 
